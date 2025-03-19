@@ -35,7 +35,7 @@
 #     query: str
 
 # folder_id = None
-# client = Mistral(api_key="8larRmMd24jOubEOKrcysrCBYLjplJRn")
+# client = Mistral(api_key="")
 
 # # Global variables to cache documents and vector store
 # cached_documents = []
@@ -453,7 +453,7 @@ async def set_folder(folder_id_input: str = Form(...)):
 
     os.environ["HF_TOKEN"] = "" 
 
-    mistral_api_key = "8larRmMd24jOubEOKrcysrCBYLjplJRn"
+    mistral_api_key = "your key"
     embeddings = MistralAIEmbeddings(model="mistral-embed", api_key=mistral_api_key)
 
     if not split_documents:
@@ -501,7 +501,7 @@ async def query_drive(query_request: QueryRequest, user: str = Depends(get_curre
 
     retriever = cached_vector_store.as_retriever()
 
-    mistral_api_key = "8larRmMd24jOubEOKrcysrCBYLjplJRn"
+    mistral_api_key = "your key"
     model = ChatMistralAI(api_key=mistral_api_key)
 
     prompt = ChatPromptTemplate.from_template("""Answer the following question based only on the provided context:
