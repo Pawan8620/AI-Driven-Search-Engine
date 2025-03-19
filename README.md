@@ -1,7 +1,7 @@
 # AI-Driven Search Engine with Google Drive Integration
 
 ## Project Description
-The AI-Driven Search Engine is a FastAPI application that integrates with Google Drive to retrieve files, process them, and leverage Mistral AI for answering user queries based on the content of these files. The application supports user authentication, query history tracking, and provides a streamlined interface for querying documents stored in a specified Google Drive folder.
+The AI-Driven Search Engine is a FastAPI application that integrates with Google Drive to retrieve files, process them, and leverage Mistral AI to answer user queries based on the content of these files. The application supports user authentication, query history tracking, and provides a streamlined interface for querying documents stored in a specified Google Drive folder.
 
 ## Features
 - **User Authentication:** Register and login functionality to manage user sessions.
