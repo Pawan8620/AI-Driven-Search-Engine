@@ -1,0 +1,25 @@
+# Ignore Python virtual environment and cache
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore environment files
+.env
+
+# Ignore history and cache files
+history.db
+document_cache.json
+drive-with-rag-bf*
+
+# Ignore node_modules if using Node.js for frontend or backend
+node_modules/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE/editor-specific files
+.vscode/
+*.log

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Search with RAG</title>
+    <style>
+.history-btn1{
+    position: absolute;
+    top: 18px;
+    right: 210px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+.history-btn1:hover {
+    background-color: #04631a;
+    transform: scale(1.05);
+}
+
+.history-btn1:active {
+    background-color: #04631a;
+    transform: scale(0.95);
+}
+
+.logout-btn {
+    position: absolute;
+    top: 18px;
+    right: 100px;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.logout-btn:hover {
+    background-color: #cc0000;
+    transform: scale(1.05);
+}
+
+.logout-btn:active {
+    background-color: #b30000;
+    transform: scale(0.95);
+}
+
+
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .navbar {
+            background-color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+        .navbar h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px;
+            flex-grow: 1; /* Allow the container to grow */
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button#setIdButton {
+            background-color: #007bff;
+        }
+        button#setIdButton:hover {
+            background-color: #0056b3;
+        }
+        button#sendButton {
+            background-color: #28a745;
+            width: 100%; /* Full width for send button */
+        }
+        button#sendButton:hover {
+            background-color: #218838;
+        }
+        #response {
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            border: 1px solid #cccccc;
+        }
+        #folderPathContainer {
+            display: none; /* Initially hidden */
+        }
+        /* Your existing CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .navbar {
+            background-color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .response-entry {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            border: 1px solid #cccccc;
+        }
+        .response-entry p {
+            margin: 5px 0;
+        }
+        #folderPathContainer {
+            display: none;
+        }
+        /* Styling the image through CSS */
+    .styled-image {
+        width: 50px;
+        height: auto;
+        border-radius: 10px;
+        border: 2px solid #333;
+        /* box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5); */
+    }
+
+    </style>
+</head>
+<body>
+    <button id="logout" class="logout-btn" onclick="window.location.href='/logout'">Logout</button>
+    <button class="history-btn1" onclick="window.location.href='/history_page'">History</button>
+    <div class="navbar">
+        
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8nJt_BB7aVCUnQ5SZxglQ6qfnwaWDOGvZ5w&s" class="styled-image" alt="Online Image">
+
+        
+        <button id="setIdButton" onclick="toggleFolderPath()">Set ID</button>
+    </div>
+    <div class="container">
+        <div id="folderPathContainer">
+            <form id="folderForm">
+                <label for="folderId">Enter Folder ID:</label>
+                <input type="text" id="folderId" name="folderId" required>
+                <button style="background-color: rgb(225, 162, 80);" type="submit">Submit Folder ID</button>
+            </form>
+        </div>
+        <form action="/query" id="queryForm" method="POST">
+            <label for="query">Enter Query:</label>
+            <input type="text" id="query" name="query" required>
+            <button type="submit" id="sendButton">Send</button>
+        </form>
+        <div id="response"></div>
+        <div id="result"></div>
+
+        <!-- <div id="responseLog"></div>  -->
+    </div>
+
+    <script>
+        let folderId = null; // Store the folder ID globally
+    
+        // Toggle folder input visibility
+        function toggleFolderPath() {
+            const folderPathContainer = document.getElementById('folderPathContainer');
+            folderPathContainer.style.display = 
+                folderPathContainer.style.display === 'none' ? 'block' : 'none';
+        }
+    
+        // Handle folder ID submission
+        document.getElementById('folderForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            folderId = document.getElementById('folderId').value;
+    
+            if (!folderId) {
+                alert("Folder ID cannot be empty.");
+                return;
+            }
+    
+            try {
+                const response = await fetch('/set_folder/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ 'folder_id_input': folderId })
+                });
+    
+                const result = await response.json();
+                alert(result.message);
+    
+                // Hide folder input after setting the ID
+                document.getElementById('folderPathContainer').style.display = 'none';
+                document.getElementById('folderId').value = ''; // Clear input
+    
+            } catch (error) {
+                console.error('Error setting folder ID:', error);
+            }
+        });
+    
+        // Handle query submission
+        // document.getElementById('queryForm').addEventListener('submit', async function (e) {
+        //     e.preventDefault();
+        //     const query = document.getElementById('query').value.trim();
+    
+        //     if (!query) {
+        //         alert("Please enter a query before submitting.");
+        //         return;
+        //     }
+    
+        //     if (!folderId) {
+        //         alert("Please set the folder ID before asking a query.");
+        //         return;
+        //     }
+    
+        //     try {
+        //         const response = await fetch('/query', {
+        //             method: 'POST',
+        //             headers: { 'Content-Type': 'application/json' },
+        //             body: JSON.stringify({ query })
+        //         });
+    
+        //         if (response.ok) {
+        //             const result = await response.json();
+        //             appendResponse(query, result.answer || result.detail);
+        //             document.getElementById('result').innerText = result.answer;
+        //         } else {
+        //             console.error('Failed to get a response from the server.');
+        //         }
+    
+        //     } catch (error) {
+        //         console.error('Error sending query:', error);
+        //     }
+        // });
+
+        document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById('queryForm');
+    const responseContainer = document.getElementById('response');
+    const logoutButton = document.getElementById('logout');  // Ensure your logout button has this ID
+
+    // Function to load saved responses from localStorage
+    function loadResponses() {
+        const savedResponses = JSON.parse(localStorage.getItem("queryResponses")) || [];
+        responseContainer.innerHTML = ""; // Clear the container before adding stored data
+
+         // Show newest queries at the top
+         savedResponses.reverse().forEach(entry => {
+            const newResponse = document.createElement('p');
+            newResponse.innerHTML = `<strong>Q:</strong> ${entry.query}<br><strong>A:</strong> ${entry.answer}`;
+            responseContainer.appendChild(newResponse);
+        });
+        // savedResponses.reverse().forEach(entry => {
+        //     const newResponse = document.createElement('p');
+        //     newResponse.innerHTML = `<strong>Q:</strong> ${entry.query}<br><strong>A:</strong> ${entry.answer}`;
+        //     responseContainer.appendChild(newResponse);
+        // });
+    }
+
+    // Check if this is a new session by looking for a session flag
+    if (!sessionStorage.getItem("sessionActive")) {
+        localStorage.removeItem("queryResponses");  // Clear local storage on new session
+        sessionStorage.setItem("sessionActive", "true");  // Set session flag
+    }
+
+    // Load responses when page loads
+    loadResponses();
+
+    // Handle query submission
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const queryInput = document.getElementById('query');
+        const query = queryInput.value.trim();
+
+        if (!query) return; // Prevent empty queries
+
+        try {
+            const response = await fetch('/query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: query })
+            });
+
+            const result = await response.json();
+            const answer = result.answer || result.detail;
+
+            // Create new response entry
+            const newResponse = document.createElement('p');
+            newResponse.innerHTML = `<strong>Q:</strong> ${query}<br><strong>A:</strong> ${answer}`;
+            responseContainer.appendChild(newResponse);
+
+            // Save response to localStorage
+            const savedResponses = JSON.parse(localStorage.getItem("queryResponses")) || [];
+            savedResponses.push({ query, answer });
+            localStorage.setItem("queryResponses", JSON.stringify(savedResponses));
+
+            // Clear input field
+            // Refresh the page to show the new response at the top
+            window.location.reload();
+            queryInput.value = "";
+        } catch (error) {
+            console.error("Error fetching response:", error);
+        }
+    });
+
+    // Handle logout (clears session and localStorage)
+    if (logoutButton) {
+        logoutButton.addEventListener('click', function () {
+            localStorage.removeItem("queryResponses");
+            sessionStorage.removeItem("sessionActive");
+            window.location.href = '/logout';  // Redirect to your logout route if needed
+        });
+    }
+});
+
+
+//IMP FOR QUERY ASKING THE BELOW COMMENT
+//         document.addEventListener("DOMContentLoaded", function () {
+//     const form = document.getElementById('queryForm');
+//     const responseContainer = document.getElementById('response');
+//     // const logoutButton = document.getElementByClassName('logout-btn');
+//     // // Clear localStorage on logout
+//     // if (logoutButton) {
+//     //     logoutButton.addEventListener('click', function () {
+//     //         localStorage.removeItem("queryResponses");
+//     //         window.location.href = '/logout';  // Redirect to your logout route if needed
+//     //     });
+//     // }
+
+//     // Function to load saved responses from localStorage
+//     function loadResponses() {
+//         const savedResponses = JSON.parse(localStorage.getItem("queryResponses")) || [];
+//         responseContainer.innerHTML = ""; // Clear the container before adding stored data
+
+//         savedResponses.forEach(entry => {
+//             const newResponse = document.createElement('p');
+//             newResponse.innerHTML = `<strong>Q:</strong> ${entry.query}<br><strong>A:</strong> ${entry.answer}`;
+//             responseContainer.appendChild(newResponse);
+//         });
+//     }
+
+//     // Load responses when page loads
+//     loadResponses();
+
+//     form.addEventListener('submit', async function (e) {
+//         e.preventDefault();
+
+//         const queryInput = document.getElementById('query');
+//         const query = queryInput.value.trim();
+
+//         if (!query) return; // Prevent empty queries
+
+//         try {
+//             const response = await fetch('/query', {
+//                 method: 'POST',
+//                 headers: { 'Content-Type': 'application/json' },
+//                 body: JSON.stringify({ query: query })
+//             });
+
+//             const result = await response.json();
+//             const answer = result.answer || result.detail;
+
+//             // Create new response entry
+//             const newResponse = document.createElement('p');
+//             newResponse.innerHTML = `<strong>Q:</strong> ${query}<br><strong>A:</strong> ${answer}`;
+//             responseContainer.appendChild(newResponse);
+
+//             // Save response to localStorage
+//             const savedResponses = JSON.parse(localStorage.getItem("queryResponses")) || [];
+//             savedResponses.push({ query, answer });
+//             localStorage.setItem("queryResponses", JSON.stringify(savedResponses));
+
+//             // Clear input field
+//             queryInput.value = "";
+//         } catch (error) {
+//             console.error("Error fetching response:", error);
+//         }
+//     });
+// });
+
+
+        //important for query and response :::
+//         document.getElementById('queryForm').addEventListener('submit', async function(e) {
+//             e.preventDefault();
+//             const query = document.getElementById('query').value;
+//             const response = await fetch('/query', {
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                 },
+//                 body: JSON.stringify({ query: query })
+//             });
+//             const result = await response.json();
+//             document.getElementById('response').innerText = result.answer || result.detail;
+//         });
+
+//         // Append query and response to the response log
+//         document.addEventListener("DOMContentLoaded", function () {
+//     document.getElementById('queryForm').addEventListener('submit', async function (e) {
+//         e.preventDefault();
+        
+//         const query = document.getElementById('query').value;
+//         const response = await fetch('/query', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify({ query: query })
+//         });
+
+//         const result = await response.json();
+//         const responseElement = document.getElementById('response');
+
+//         if (responseElement) {
+//             // Create a new paragraph element for each response
+//             const newResponse = document.createElement('p');
+//             newResponse.innerText = `Q: ${query}\nA: ${result.answer || result.detail}`;
+            
+//             // Append the new response to the existing ones
+//             responseElement.appendChild(newResponse);
+//         } else {
+//             console.error("Element with id 'response' not found.");
+//         }
+//     });
+// });
+
+//         function appendResponse(query, answer) {
+//     const responseElement = document.getElementById('response'); // Ensure this exists
+
+//     if (!responseElement) {
+//         console.error("Element with id 'result' not found!");
+//         return;
+//     }
+
+//     const queryElement = document.createElement('p');
+//     queryElement.innerHTML = `<strong>You:</strong> ${query}`;
+
+//     const answerElement = document.createElement('p');
+//     answerElement.innerHTML = `<strong>AI:</strong> ${answer}`;
+
+//     responseElement.appendChild(queryElement);
+//     responseElement.appendChild(answerElement);
+// }
+
+
+
+    </script>
+    
+    <div id="history"></div>
+    
+    <!-- <script>
+
+    async function sendQuery() {
+    const query = document.getElementById('query').value;
+    const response = await fetch('/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `query=${query}`
+    });
+    const result = await response.json();
+    document.getElementById('result').innerText = result.response;
+    }
+
+
+        // Function to toggle folder input visibility
+        function toggleFolderPath() {
+            const folderPathContainer = document.getElementById('folderPathContainer');
+            if (folderPathContainer.style.display === 'none') {
+                folderPathContainer.style.display = 'block';
+            } else {
+                folderPathContainer.style.display = 'none';
+            }
+        }
+
+        // Handle folder ID submission
+        document.getElementById('folderForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const folderId = document.getElementById('folderId').value;
+            const response = await fetch('/set_folder/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'folder_id_input': folderId,
+                })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+            document.getElementById('folderId').value = '';
+            document.getElementById('folderPathContainer').style.display = 'none';
+        });
+
+        // Handle query submission
+        document.getElementById('queryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const query = document.getElementById('query').value;
+            const response = await fetch('/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: query })
+            });
+
+            const result = await response.json();
+
+            // Append each query and response to the response log
+            const responseLog = document.getElementById('responseLog');
+            const responseEntry = document.createElement('div');
+            responseEntry.classList.add('response-entry');
+            responseEntry.innerHTML = `
+                <p><strong>Query:</strong> ${query}</p>
+                <p><strong>Response:</strong> ${result.answer || result.detail}</p>
+            `;
+            responseLog.appendChild(responseEntry);
+            responseLog.scrollTop = responseLog.scrollHeight; // Scroll to the latest entry
+        });
+    </script> -->
+</body>
+</html>
+
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Search with RAG</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 80%;
+            max-width: 400px; /* Adjusted width */
+        }
+        h1 {
+            text-align: center;
+            color: #333333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        #response {
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            border: 1px solid #cccccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Local Search with RAG</h1>
+        <form id="folderForm">
+            <label for="folderId">Enter Folder ID:</label>
+            <input type="text" id="folderId" name="folderId" required>
+            <button type="submit">Set Folder ID</button>
+        </form>
+        <form id="queryForm">
+            <label for="query">Enter Query:</label>
+            <input type="text" id="query" name="query" required>
+            <button type="submit">Submit Query</button>
+        </form>
+        <div id="response"></div>
+    </div>
+
+    <script>
+        document.getElementById('folderForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const folderId = document.getElementById('folderId').value;
+            const response = await fetch('/set_folder/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'folder_id_input': folderId,
+                })
+            });
+            const result = await response.json();
+            alert(result.message);
+        });
+
+        document.getElementById('queryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const query = document.getElementById('query').value;
+            const response = await fetch('/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: query })
+            });
+            const result = await response.json();
+            document.getElementById('response').innerText = result.answer || result.detail;
+        });
+    </script>
+</body>
+</html> -->
