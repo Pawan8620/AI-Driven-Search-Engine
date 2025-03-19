@@ -12,6 +12,7 @@ __pycache__/
 history.db
 document_cache.json
 drive-with-rag-bf*
+drive-with-rag-bf7e8c4b530b.json
 
 # Ignore node_modules if using Node.js for frontend or backend
 node_modules/
