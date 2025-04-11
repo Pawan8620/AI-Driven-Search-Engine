@@ -456,7 +456,7 @@ async def set_folder(folder_id_input: str = Form(...)):
 
     os.environ["HF_TOKEN"] = "" 
 
-    mistral_api_key = "your key"
+    mistral_api_key = os.getenv("mistral_api_key")
     embeddings = MistralAIEmbeddings(model="mistral-embed", api_key=mistral_api_key)
 
     if not split_documents:
