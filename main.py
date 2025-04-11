@@ -401,8 +401,9 @@ async def set_folder(folder_id_input: str = Form(...)):
     global folder_id, cached_documents, cached_vector_store
     folder_id = folder_id_input
 
+    
     SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-    service_account_info = json.loads(os.environ["drive-with-rag-bf7e8c4b530b.json"])
+    service_account_info = json.loads(os.environ["SERVICE_ACCOUNT_JSON"])
     credentials = service_account.Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
     # SERVICE_ACCOUNT_FILE = r'C:\Users\Pawan\Downloads\AI-Search-Engine\drive-with-rag-bf7e8c4b530b.json'
 
