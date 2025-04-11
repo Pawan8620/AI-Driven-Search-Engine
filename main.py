@@ -504,7 +504,7 @@ async def query_drive(query_request: QueryRequest, user: str = Depends(get_curre
 
     retriever = cached_vector_store.as_retriever()
 
-    mistral_api_key = "your key"
+    mistral_api_key = os.getenv("mistral_api_key")
     model = ChatMistralAI(api_key=mistral_api_key)
 
     prompt = ChatPromptTemplate.from_template("""Answer the following question based only on the provided context:
